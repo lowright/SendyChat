@@ -4,19 +4,82 @@ import auth, { firebase } from '@react-native-firebase/auth';
 import '@react-native-firebase/app';
 
 
-import Authntication from './app/screens/Auth/Authentication';
-import Recovery from './app/screens/Auth/Recovery';
+import Authentication from './app/screens/Auth/Authentication';
 import Preloader from './app/screens/Auth/Preloader';
 import ConfirmCode from './app/screens/Auth/ConfirmCode'
 import Registration from './app/screens/Auth/Registration';
 import StartWork from './app/screens/Auth/StartWork';
 
+//Screens Chat
+import GlobalChat from './app/screens/Chat/GlobalChat'
 
-const App = () => {
-  return(
-    <Recovery/>
-  )
+if (!firebase.apps.length) {
+  firebase.initializeApp({
+    apiKey: "AIzaSyCywi0HVRCuF7IouiMYwYToVBruk-BaZgI",
+    authDomain: "sendychat-a816c.firebaseapp.com",
+    databaseURL: "https://sendychat-a816c.firebaseio.com",
+    projectId: "sendychat-a816c",
+    storageBucket: "sendychat-a816c.appspot.com",
+    messagingSenderId: "16575438579",
+    appId: "1:16575438579:web:8101815f3c5aecc8ee2186",
+    measurementId: "G-1S81KZ04XS"
+  })
 }
+
+//Import Navigators
+
+  //AuthNavigation
+  import AuthNavigator from './app/navigation/AuthNavigation/AuthNavigation'
+
+//
+  
+class App extends Component {
+
+  constructor (props) {
+    super(props)
+
+    this.state = {
+      isLogIn: false,
+    }
+
+  }
+
+  performTimeConsumingTask = async() => {
+    return new Promise((resolve) =>
+      setTimeout(
+        () => { resolve('result') },
+        1400
+      )
+    );
+  }
+
+
+  async componentDidMount() {
+    // Preload data from an external API
+    // Preload data using AsyncStorage
+    const data = await this.performTimeConsumingTask();
+  
+    if (data !== null) {
+      this.setState({ isLoading: false });
+    }
+    
+  }
+
+  render () {
+    
+    if (this.state.isLogIn) {
+      return <GlobalChat />;
+    }
+
+    return (
+      <AuthNavigator />
+    )
+
+  }
+
+}
+
+
 
 export default App
 
@@ -49,16 +112,6 @@ export default App
 //         });
 //       }
 //     })
-//     // firebase.initializeApp(firebase.initializeApp({
-//     //   apiKey: "AIzaSyDvm3s1iLCtVqNCBV-1KUaRlxFudWU_WsU",
-//     //   authDomain: "sendychat-b835b.firebaseapp.com",
-//     //   databaseURL: "https://sendychat-b835b.firebaseio.com",
-//     //   projectId: "sendychat-b835b",
-//     //   storageBucket: "sendychat-b835b.appspot.com",
-//     //   messagingSenderId: "6707008827",
-//     //   appId: "1:6707008827:web:cdeefd6cf97e811c33531e",
-//     //   measurementId: "G-06Z9ENQ590"
-//     // })
 //   }
 
 //   componentWillUnmount() {

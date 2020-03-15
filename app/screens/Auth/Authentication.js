@@ -9,8 +9,8 @@ import {
   FlatList,
   Animated,
 } from 'react-native'
-
-
+import auth from '@react-native-firebase/auth';
+import '@react-native-firebase/app';
 import { Icon, CheckBox } from 'react-native-elements'
 import {
   Container,
@@ -19,7 +19,6 @@ import {
 
 // Import data for countries
 import data from '../../static/countries'
-
 // Default render of country flag
 const defaultFlag = data.filter(obj => obj.name === 'Ukraine')[0].flag
 
@@ -27,16 +26,24 @@ const defaultFlag = data.filter(obj => obj.name === 'Ukraine')[0].flag
 const defaultCode = data.filter(obj => obj.name === 'Ukraine')[0].dial_code
 
 export default class Authentication extends React.Component {
-  state = {
-    username: '',
-    phoneNumber: '',
-    password : 'qwe123!Q',
-    fadeIn: new Animated.Value(0),  // Initial value for opacity: 0
-    fadeOut: new Animated.Value(1),  // Initial value for opacity: 1
-    isHidden: false,
-    dial_code: defaultCode,
-    modalVisible: false,
-    checked : false
+  
+  constructor(props) {
+    super(props)
+
+    this.state = {
+      user: null,
+      phoneNumber: '',
+      password : 'qwe123!Q',
+      fadeIn: new Animated.Value(0),  // Initial value for opacity: 0
+      fadeOut: new Animated.Value(1),  // Initial value for opacity: 1
+      isHidden: false,
+      dial_code: defaultCode,
+      modalVisible: false,
+      checked : false,
+      codeInput: '',
+      message: '',
+      confirmResult: null,
+    }
   }
   
   // Get user input
@@ -47,8 +54,31 @@ export default class Authentication extends React.Component {
   }
   // Methods for logo animation
   componentDidMount() {
+    this.unsubscribe = auth().onAuthStateChanged((user) => {
+      if (user) {
+        this.setState({ user: user.toJSON() });
+      } else {
+        // User has been signed out, reset the state
+        this.setState({
+          user: null,
+          message: '',
+          codeInput: '',
+          phoneNumber: '',
+          confirmResult: null,
+        });
+      }
+    })
+    
     this.fadeIn()
   }
+
+  signIn = () => {
+    const { phoneNumber } = this.state;
+    auth().signInWithPhoneNumber(phoneNumber)
+      .then( confirmResult => this.props.navigation.navigate('ConfirmCode',{ confirmResult }))
+      .catch(error => alert(error.message));
+  };
+
   fadeIn() {
     Animated.timing(
       this.state.fadeIn,
@@ -99,14 +129,10 @@ export default class Authentication extends React.Component {
       console.log(err)
     }
   }
-  // Sign up user with AWS Amplify Auth
-  async signUp() {
-    const { phoneNumber, password, username} = this.state
-    alert('SingUp' + this.state.phoneNumber)
-  }
   
 
   render() {
+    const { navigation } = this.props;
     let { fadeOut, fadeIn, isHidden, dial_code } = this.state
     const countryData = data
     return (
@@ -151,7 +177,7 @@ export default class Authentication extends React.Component {
                   onChangeText={(val) => {
                     if (this.state.phoneNumber===''){
                       // render UK phone code by default when Modal is not open
-                      this.onChangeText('phoneNumber', val)
+                      this.onChangeText('phoneNumber', dial_code + val)
                     } else {
                       // render country code based on users choice with Modal
                       this.onChangeText('phoneNumber',  val)
@@ -215,7 +241,7 @@ export default class Authentication extends React.Component {
                 onPress={() => this.setState({checked: !this.state.checked})}
               />
             <TouchableOpacity disabled={this.state.checked ? false : true}
-              onPress={() => this.signUp()}
+              onPress={() => this.signIn()}
               style={styles.buttonStyle}
             >
               <Text style={styles.buttonText}>

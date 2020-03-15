@@ -1,0 +1,24 @@
+{
+  "hosting": {
+    "public": "app",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.js"
+      }
+    ]
+  },
+  "emulators": {
+    "functions": {
+      "port": "Y"
+    },
+    "hosting": {
+      "port": "Y"
+    }
+  }
+}
