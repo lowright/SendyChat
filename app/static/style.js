@@ -1,6 +1,6 @@
 import {StyleSheet, Platform} from 'react-native';
 
-export const CELL_SIZE = 40;
+export const CELL_SIZE = 55;
 export const CELL_BORDER_RADIUS = 8;
 export const DEFAULT_CELL_BG_COLOR = '#fff';
 export const NOT_EMPTY_CELL_BG_COLOR = '#3557b7';
@@ -46,7 +46,7 @@ const styles = StyleSheet.create({
 
   root: {
     height : '100%',
-    padding: 10,
+    padding: 20,
     justifyContent : 'center'
   },
   title: {

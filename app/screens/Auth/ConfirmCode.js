@@ -1,13 +1,17 @@
+import React, {Component, useState} from 'react'
+import AsyncStorage from '@react-native-community/async-storage';
+
 import {Animated, Image, SafeAreaView, Text, TouchableOpacity} from 'react-native';
-import React, {useState} from 'react';
 
 import {CodeField, Cursor, useBlurOnFulfill, useClearByFocusCell} from 'react-native-confirmation-code-field';
 
 import styles, {ACTIVE_CELL_BG_COLOR, CELL_BORDER_RADIUS, CELL_SIZE, DEFAULT_CELL_BG_COLOR, NOT_EMPTY_CELL_BG_COLOR} from '../../static/style';
 
+
+
 const {Value, Text: AnimatedText} = Animated;
 
-const CELL_COUNT = 6;
+const CELL_COUNT = 4;
 const source = {
     uri: 'https://user-images.githubusercontent.com/4661784/56352614-4631a680-61d8-11e9-88' +
             '0d-86ecb053413d.png'
@@ -35,12 +39,10 @@ const animateCell = ({hasValue, index, isFocused}) => {
 };
 
 
-const ConfirmCode = ({navigation}) => {
+const ConfirmCode =  ({navigation}) => {
     const [value, setValue] = useState('');
-    const confirmResult = navigation.dangerouslyGetParent()
     const ref = useBlurOnFulfill({value, cellCount: CELL_COUNT});
     const [props, getCellOnLayoutHandler] = useClearByFocusCell({value, setValue});
-
     const renderCell = ({index, symbol, isFocused}) => {
         const hasValue = Boolean(symbol);
         const animatedCellStyle = {
@@ -93,14 +95,31 @@ const ConfirmCode = ({navigation}) => {
         );
     };
 
-    const applyCode = () => {
-        // if (confirmResult && value.length) {
-        //   confirmResult.confirm(value)
-        //     .then((user) => alert(1))
-        //     .catch(error => alert(error));
-        // }
-        alert(JSON.stringify(confirmResult))
-
+    const applyCode = async () => {
+        
+        const navigationProps = navigation.state.params;
+        const settings = {
+          method: 'POST',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            phone : navigationProps.phone,
+            code : value
+          })
+        };
+        try {
+          const data = await fetch(`https://frozen-oasis-23821.herokuapp.com/api/v1/checksmscode`, settings);
+          const json = await data.json()
+          if(JSON.stringify(data.status) === "400"){
+            await navigation.navigate('Registration', {phone : navigationProps.phone})
+          } else{
+            await AsyncStorage.setItem('userToken', JSON.stringify(json.access_token));
+            await navigation.navigate('User');
+          }
+        } 
+        catch (error) { alert(error) }
     }
 
     return (
@@ -123,11 +142,29 @@ const ConfirmCode = ({navigation}) => {
             />
             <TouchableOpacity onPress={() => applyCode()} style={styles.techBtn}>
                 <Text style={styles.resendCode}>
-                    Отпроавить код еще раз
+                    Отпроавить код 
                 </Text>
             </TouchableOpacity>
         </SafeAreaView>
     );
 };
 
-export default ConfirmCode;
+// class ConfirmCode extends React.Component {
+//     static navigationOptions = {
+//       title: 'Confirm',
+//     };
+  
+//     render() {
+//       return (
+//         <View style={styles.container}>
+//           <Button title="Sign in!" onPress={this._signInAsync} />
+//           <Button title="Registration" onPress={() => this.props.navigation.navigate('Regist')} />
+//         </View>
+//       );
+//     }
+    
+   
+// }
+
+export default ConfirmCode
+

@@ -1,2 +1,0 @@
-# SendyChat
-Front Authntication
