@@ -1,71 +1,68 @@
 import React, {Component} from 'react'
-import {Text, View, Button, StyleSheet} from 'react-native'
-import AsyncStorage from '@react-native-community/async-storage';
-
+import {Text, View, Button, StyleSheet, FlatList, ActivityIndicator  } from 'react-native'
+import {Header, List, ListItem } from 'react-native-elements'
+//Import Components
+import ChatList from '../../components/ChatList'
 
 class HomeScreen extends React.Component {
 
-    static navigationOptions = {
-      title: 'Chat ',
-    };
-  
-    constructor(props){
-      super(props)
+  static navigationOptions = {
+    title: 'Чаты ',
+  };
 
-      this.state = {
-        nickname : '',
-        firstname : '',
-        lastname : '',
+  constructor(props) {
+    super(props);
 
-      }
-    }
-
-    componentDidMount(){
-      // const settings = {
-      //   method: 'GET',
-      //   headers: {
-      //     'Accept': 'application/json',
-      //     'Content-Type': 'application/json'
-      //   },
-      //   body: JSON.stringify({
-      //     phone : navigationProps.phone,
-      //     code : value
-      //   })
-      // };
-      // try {
-      //   const data = await fetch(`https://frozen-oasis-23821.herokuapp.com/api/v1/checksmscode`, settings);
-      //   const json = await data.json()
-      //   if((JSON.stringify(json.message) === "Register")){
-      //     await this.props.navigation.navigate('Regist')
-      //   } else{
-      //     await AsyncStorage.setItem('userToken', JSON.stringify(json.access_token));
-      //     await navigation.navigate('User');
-      //   }
-      // } 
-      // catch (error) { alert(error) }
-    }
-
-    render() {
-      return (
-        <View style={styles.container}>
-          <Button title="Welcome To Chat UserId 34)" onPress={this._signOutAsync} />
-        </View>
-      );
-    }
-  
-    _signOutAsync = async () => {
-      await AsyncStorage.clear();
-      this.props.navigation.navigate('Auth');
+    this.state = {
+      loading: false,
+      data: [],
+      page: 1,
+      seed: 1,
+      error: null,
+      refreshing: false
     };
   }
+
+
+  render() {
+    return (
+      <View>
+        <Text>adad</Text>
+      </View>
+    );
+  }
+}
 
 export default HomeScreen
 
 
 const styles = StyleSheet.create({
     container : {
-      flex : 1,
       alignItems : 'center',
-      justifyContent : 'center'
+      height : '100%'
+    },
+    header:{
+      backgroundColor: 'transparent',
+      borderBottomWidth : 0.4,
+      paddingBottom : 0,
+      borderBottomColor : '#000',
+      paddingTop : 0,
+    },
+    listChatWrapper : {
+      width : '100%',
+      alignItems : 'center',
+      flex : 1,
+      paddingTop : 25
+    },
+    searchChanel : {
+      borderColor : '#000',
+      borderWidth : 1,
+      borderRadius : 30,
+      padding : 0,
+      paddingLeft : 5,
+      paddingRight : 5,
+      width : '70%',
+      textAlign : 'center',
+      marginBottom :25
     }
 })

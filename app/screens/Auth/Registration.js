@@ -1,5 +1,5 @@
 import React, {Component} from 'react'
-import {Image, TextInput, StyleSheet, TouchableOpacity, Text, Button} from 'react-native'
+import {Image, TextInput, StyleSheet, TouchableOpacity, Text, Button, SafeAreaView, ScrollView  } from 'react-native'
 import {View} from 'native-base'
 import AsyncStorage from '@react-native-community/async-storage';
 
@@ -8,7 +8,7 @@ class RegistrationScreen extends Component {
       nickname: '',
       name: '',
       lastname: '',
-      firstname : ' ',
+      firstname : '',
       lastname : '',
       userToken : ''
   }
@@ -36,9 +36,9 @@ class RegistrationScreen extends Component {
         
         if(JSON.stringify(json.access_token)){
           await AsyncStorage.setItem('userToken', JSON.stringify(json.access_token));
-          await this.props.navigation.navigate('User');
-        } else{
-          alert('Error')
+          await this.props.navigation.navigate('StartWorking');
+      } else{
+          alert('Заполните все поля')
         }
       } 
       catch (error) { alert(error) }
@@ -58,7 +58,7 @@ class RegistrationScreen extends Component {
       const { photo} = this.state;
       return (
 
-          <View style={styles.wrapper}>
+          <SafeAreaView  style={styles.wrapper}>
              <Image
                   style={{
                   paddingVertical: 30,
@@ -68,8 +68,8 @@ class RegistrationScreen extends Component {
                   }}
                   resizeMode='cover'
                   source={{uri: 'https://img.icons8.com/clouds/2x/user.png'}}/>
-
-              <TextInput
+                <ScrollView  style={styles.scroll}>
+                <TextInput
                   style={styles.input}
                   onChangeText={firstname => this.onChangeText('firstname', firstname)}
                   value={this.state.firstname}
@@ -84,12 +84,15 @@ class RegistrationScreen extends Component {
                   onChangeText={nickname => this.onChangeText('nickname', nickname)}
                   value={this.state.nickname}
                   placeholder={'Никнейм (обязательно)'}/>
-              <TouchableOpacity onPress={() => this.sendUserInfo()} style={styles.welcome}>
+<TouchableOpacity onPress={() => this.sendUserInfo()} style={styles.welcome}>
                   <Text style={styles.welcomeTitle}>
                       Готово
                   </Text>
               </TouchableOpacity>
-          </View>
+                </ScrollView>
+              
+              
+          </SafeAreaView >
       )
 
   }
@@ -103,30 +106,32 @@ const styles = StyleSheet.create({
   wrapper: {
       height: '100%',
       alignItems: 'center',
-      justifyContent: 'space-between',
+      justifyContent: 'center',
       marginHorizontal: 30,
-      paddingVertical : '10%'
+      paddingVertical : '10%',
+      flex : 1
   },
   input: {
       height: 40,
       borderBottomColor: 'gray',
       borderBottomWidth: 1,
       width: '100%',
-      marginBottom: 15
+      marginBottom: 25
   },
   welcome: {
       alignItems: 'center',
       backgroundColor: '#00AEEF',
       padding: 14,
-      width : '75%',
-      marginBottom: 10,
       borderRadius: 32,
       marginHorizontal: 20,
-      marginTop: 10
+      marginTop : 40
   },
   welcomeTitle: {
       fontSize: 18,
       fontWeight: 'bold',
       color: "#fff"
+  },
+  scroll: {
+    width : '100%'
   }
 })

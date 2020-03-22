@@ -94,7 +94,6 @@ const ConfirmCode =  ({navigation}) => {
             </AnimatedText>
         );
     };
-
     const applyCode = async () => {
         
         const navigationProps = navigation.state.params;
@@ -142,7 +141,7 @@ const ConfirmCode =  ({navigation}) => {
             />
             <TouchableOpacity onPress={() => applyCode()} style={styles.techBtn}>
                 <Text style={styles.resendCode}>
-                    Отпроавить код 
+                    Отправить код 
                 </Text>
             </TouchableOpacity>
         </SafeAreaView>

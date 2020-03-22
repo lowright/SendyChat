@@ -1,7 +1,7 @@
 import React, {Component} from 'react'
-import {Text, View, Button, StyleSheet,TouchableOpacity, TouchableWithoutFeedback, Modal, FlatList, Animated,} from 'react-native'
-import { Icon, CheckBox } from 'react-native-elements'
-import { Container, Item, Input} from 'native-base'
+import {Text, ActivityIndicator, View, StyleSheet,TouchableOpacity, TouchableWithoutFeedback, Modal, FlatList, Animated,} from 'react-native'
+import { Icon, CheckBox, Button} from 'react-native-elements'
+import { Container, Item, Input } from 'native-base'
 // Import data for countries
 import data from '../../static/countries'
 
@@ -138,9 +138,9 @@ class SingInScreen extends React.Component {
                   <TouchableOpacity onPress={() => this.showModal()} style={{flexDirection : 'row',  alignItems : 'center'}}>
                     <Text style={{fontSize: 18, color : 'grey'}}>{dial_code}</Text>
                     <Icon 
-                      name='heartbeat'
-                      type='font-awesome'
-                      style={[styles.iconStyle, { marginLeft: 5 }]}
+                      name='fingerprint'
+                      type='material'
+                      style={styles.iconStyle}
                       onPress={() => this.showModal()}
                     />
                   </TouchableOpacity>
@@ -164,7 +164,6 @@ class SingInScreen extends React.Component {
                         this.onChangeText('phone',  val)
                       }}
                     }
-                    onFocus={() => this.fadeOut()}
                     onEndEditing={() => this.fadeIn()}
                   />
                   <Modal
@@ -216,8 +215,7 @@ class SingInScreen extends React.Component {
                   style={styles.checkBox}
                   left
                   title='Согласие на обработку данных'
-                  checkedIcon='dot-circle-o'
-                  uncheckedIcon='circle-o'
+                  name="material"
                   checked={this.state.checked}
                   onPress={() => this.setState({checked: !this.state.checked})}
                 />
@@ -241,9 +239,7 @@ class SingInScreen extends React.Component {
           </Container>
         </View>
       )
-        // <View style={styles.container}>
-        //   <Button title="SingIn Screen" onPress={() => this.props.navigation.navigate('ConfirmCode')} />
-        // </View>
+  
     }
   
 }
@@ -282,8 +278,7 @@ const styles = StyleSheet.create({
   },
   iconStyle: {
     color: '#fff',
-    fontSize: 28,
-    marginRight: 15
+    fontSize: 133,
   },
   buttonStyle: {
     alignItems: 'center',
