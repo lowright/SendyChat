@@ -21,8 +21,6 @@ class App extends Component {
   }
   
   async componentDidMount() {
-    // Preload data from an external API
-    // Preload data using AsyncStorage
     const data = await this.performTimeConsumingTask();
   
     if (data !== null) {
@@ -33,7 +31,7 @@ class App extends Component {
     return new Promise((resolve) =>
       setTimeout(
         () => { resolve('result') },
-        2000
+        3000
       )
     );
   }
@@ -42,7 +40,7 @@ class App extends Component {
     if (this.state.isLoading) {
       return <SplashScreen />;
     } else {
-      return <R/>
+      return <Navigation/>
     }
     
   }
