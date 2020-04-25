@@ -4,12 +4,13 @@ import {
   StatusBar,
   StyleSheet,
   View,
-  
+  Text
 } from 'react-native';
 
 import SplashScreen from './app/screens/SplashScreen'
 import Navigation from './app/route/routerChat'
-import R from './app/screens/Profile/ProfileScreen'
+import Test from './app/screens/Chats/CreateNewChat'
+import { LoaderScreen } from 'react-native-ui-lib';
 
 
 class App extends Component {
@@ -31,18 +32,17 @@ class App extends Component {
     return new Promise((resolve) =>
       setTimeout(
         () => { resolve('result') },
-        3000
+        2000
       )
     );
   }
 
   render(){
     if (this.state.isLoading) {
-      return <SplashScreen />;
+      return <LoaderScreen />;
     } else {
       return <Navigation/>
     }
-    
   }
 
 }

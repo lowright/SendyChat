@@ -15,7 +15,7 @@ import CallingScreeen from '../screens/Call/CallScreen'
 import GroupScreen from '../screens/Group/GroupScreen'
 import ProfileScreen from '../screens/Profile/ProfileScreen'
 import PrivatChat from '../screens/Chats/PrivatChat'
-
+import CreateNewChat from '../screens/Chats/CreateNewChat'
 
 const ChatStack = createStackNavigator({
   Chat : {
@@ -26,7 +26,15 @@ const ChatStack = createStackNavigator({
   },
   PrivatChat : {
     screen : PrivatChat,
-    
+    navigationOptions: { 
+      headerShown: false
+    },
+  },
+  CreateNewChat : {
+    screen : CreateNewChat,
+    navigationOptions: { 
+      headerShown: false
+    },
   }
 })
 
@@ -125,10 +133,6 @@ const Registration = createStackNavigator({
   Registration : RegistrationScreen, 
   StartWorking: StartWorkingScreen
 })
-
-
-
-
 
 export const Navigation = createAppContainer(createSwitchNavigator({
     AuthLoading: AuthLoadingScreen,

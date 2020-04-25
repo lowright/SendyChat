@@ -1,7 +1,9 @@
 import React, {Component} from 'react'
-import {Image, View, ScrollView, StyleSheet, ActivityIndicator, TextInput, SafeAreaView , TouchableOpacity, Text } from 'react-native'
+import {Image, View, Scr, StyleSheet, ActivityIndicator, TextInput, SafeAreaView , TouchableOpacity, Text } from 'react-native'
 import {Header} from 'react-native-elements'
 import AsyncStorage from '@react-native-community/async-storage';
+import { ScrollView } from 'react-native-gesture-handler';
+import Icon from '../../components/Icon'
 
 
 class ProfileScreen extends React.Component {
@@ -14,7 +16,7 @@ class ProfileScreen extends React.Component {
     super(props)
 
     this.state = {
-      isLoading : false,
+      isLoading : true,
       error : '',
       userName : '',
       userLastName : '',
@@ -22,7 +24,7 @@ class ProfileScreen extends React.Component {
       nickname : '',
       aboutUser : '',
       userAvatar : '',
-      
+      userPhone  : ''
     }
 
     
@@ -40,7 +42,7 @@ class ProfileScreen extends React.Component {
       },
     };
     try {
-      const res = await fetch(`https://frozen-oasis-23821.herokuapp.com/api/v1/user`, settings);
+      const res = await fetch(`https://secret-peak-55840.herokuapp.com/api/v1/user`, settings);
       const data = await res.json()
       this.setState({
         isLoading: false,
@@ -56,8 +58,9 @@ class ProfileScreen extends React.Component {
     }
   }
 
-  componentDidMount (){
-    this.getDateuser()
+  async componentDidMount (){
+    await this.getDateuser()
+    await AsyncStorage.setItem('name', this.state.userName);
   }
 
 
@@ -65,7 +68,7 @@ class ProfileScreen extends React.Component {
     const res = await AsyncStorage.getItem('userToken');
     const token = res.slice(1,-1)
     const settings = {
-      method: 'PATCH',
+      method: 'POST',
       headers: {
         'Accept': 'application/json',
         'Content-Type' : 'application/json',
@@ -73,11 +76,14 @@ class ProfileScreen extends React.Component {
       },
       body : JSON.stringify({
         nickname : this.state.nickname,
-        firstname : this.state.userName
+        firstname : this.state.userName,
+        phone : this.state.userPhone,
+        lastname : this.state.userLastName,
+        aboutme : this.state.aboutUser
       })
     };
     try {
-      await fetch(`https://frozen-oasis-23821.herokuapp.com/api/v1/update_user`, settings);
+      await fetch(`https://secret-peak-55840.herokuapp.com/api/v1/update_user`, settings);
     } 
     catch (error) { alert(error) }
   }
@@ -96,8 +102,8 @@ class ProfileScreen extends React.Component {
     return(
       <SafeAreaView  style={styles.container}>
         <Header
-          centerComponent={{ text: 'Профиль', style: { color: '#000', fontSize : 20 } }}
-          rightComponent={{ icon: 'settings', color: '#000' }}
+          centerComponent={{ text: 'Профиль', style: { color: '#000', fontSize : 18 } }}
+          rightComponent={<Icon src={require('../../assaets/images/settings.png')} />}
           containerStyle={styles.header}
         />
         <ScrollView>
@@ -226,11 +232,12 @@ const styles = StyleSheet.create({
       paddingBottom : 8
     },
     header:{
-      backgroundColor: 'transparent',
+      backgroundColor: '#ECF3F5',
       borderBottomWidth : 0.4,
-      paddingBottom : 3,
+      paddingBottom : 0,
       borderBottomColor : '#000',
-      paddingTop : 0
+      paddingTop : 0,
+      height : 60
     },
     userContactInfo: {
       width : '100%',

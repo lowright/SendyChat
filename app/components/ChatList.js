@@ -59,7 +59,8 @@ const styles = StyleSheet.create({
         width : '100%',
         flexDirection : 'row',
         paddingHorizontal : 10,
-        marginBottom : 14
+        marginBottom : 14,
+        marginTop : 10
     },
     rightChatInfo : {
         width : '75%',

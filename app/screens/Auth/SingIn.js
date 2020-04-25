@@ -50,7 +50,7 @@ class SingInScreen extends React.Component {
       body: JSON.stringify({phone})
   };
     try {
-      const data = await fetch(`https://frozen-oasis-23821.herokuapp.com/api/v1/sendphone`, settings);
+      const data = await fetch(`https://secret-peak-55840.herokuapp.com/api/v1/sendphone`, settings);
       const json = await data.json()
       if(JSON.stringify(data.status) === '200'){
         this.props.navigation.navigate('ConfirmCode', {phone})

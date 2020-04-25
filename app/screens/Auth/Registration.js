@@ -1,17 +1,24 @@
 import React, {Component} from 'react'
-import {Image, TextInput, StyleSheet, TouchableOpacity, Text, Button, SafeAreaView, ScrollView  } from 'react-native'
-import {View} from 'native-base'
+import {Image, TextInput, StyleSheet, TouchableOpacity, Text, SafeAreaView, ScrollView  } from 'react-native'
 import AsyncStorage from '@react-native-community/async-storage';
 
 class RegistrationScreen extends Component {
-  state = {
+  
+
+  constructor(props){
+    super(props) 
+
+    this.state = {
       nickname: '',
       name: '',
       lastname: '',
       firstname : '',
       lastname : '',
-      userToken : ''
-  }
+      userToken : '',
+      
+    }
+  } 
+  
   
   sendUserInfo = async () => {
       const navigationProps = this.props.navigation.state.params
@@ -31,14 +38,14 @@ class RegistrationScreen extends Component {
         })
       };
       try {
-        const data = await fetch(`https://frozen-oasis-23821.herokuapp.com/api/v1/register`, settings);
+        const data = await fetch(`https://secret-peak-55840.herokuapp.com/api/v1/register`, settings);
         const json = await data.json()
         
         if(JSON.stringify(json.access_token)){
           await AsyncStorage.setItem('userToken', JSON.stringify(json.access_token));
           await this.props.navigation.navigate('StartWorking');
       } else{
-          alert('Заполните все поля')
+          alert('Упс... Что-то пошло не так')
         }
       } 
       catch (error) { alert(error) }
@@ -55,19 +62,14 @@ class RegistrationScreen extends Component {
 
     
   render() {
-      const { photo} = this.state;
       return (
 
           <SafeAreaView  style={styles.wrapper}>
-             <Image
-                  style={{
-                  paddingVertical: 30,
-                  width: 150,
-                  height: 150,
-                  borderRadius: 75
-                  }}
-                  resizeMode='cover'
-                  source={{uri: 'https://img.icons8.com/clouds/2x/user.png'}}/>
+            <Image
+              source={{uri : 'https://img.icons8.com/clouds/2x/user.png'}}
+              style={{width : 140, height : 140}}
+            />  
+           
                 <ScrollView  style={styles.scroll}>
                 <TextInput
                   style={styles.input}
