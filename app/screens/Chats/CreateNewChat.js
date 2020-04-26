@@ -1,10 +1,10 @@
 import React, { PureComponent } from 'react';
 import { PermissionsAndroid, StyleSheet, Button, View, FlatList } from 'react-native';
 import Contacts from 'react-native-contacts';
-import ContactsList from '../../components/ContactList'
-import AsyncStorage from '@react-native-community/async-storage';
 import {Header} from 'react-native-elements'
+import AsyncStorage from '@react-native-community/async-storage';
 import Icon from '../../components/Icon'
+import { connect } from 'react-redux'
 
 class CreateNewChat extends PureComponent{
 
@@ -19,9 +19,8 @@ class CreateNewChat extends PureComponent{
 
   async componentDidMount () {
     await this.getPhoneContacts()
-    setTimeout(() => {
-      console.log(this.state.phones)
-    }, 3000)
+    await this.reqSortContacts()
+    
   }
 
   async getPhoneContacts() {
@@ -57,10 +56,31 @@ class CreateNewChat extends PureComponent{
   }
 
 
+  async reqSortContacts() {
+    const res = await AsyncStorage.getItem('userToken');
+    const token = res.slice(1,-1)
+    const settings = {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': 'Bearer ' + token
+      },
+      body : {
+        phones : this.state.contact
+      }
+    };
+    try {
+      const res = await fetch(`https://secret-peak-55840.herokuapp.com/api/v1/get_sendychat_users_numbers`, settings);
+      const data = await res.json()
+      console.log(data)
+    } catch (error) {
+      alert(error)
+    }
+  }
+
   
 
   render() {
-    const { contact } = this.state
     return (
       <>
         <Header 
@@ -85,7 +105,17 @@ class CreateNewChat extends PureComponent{
   }
 }
 
-export default CreateNewChat
+//Get Something date from redux
+const mapStateToProps = state => ({
+  contacts : state.contactsNumber //Try to get Contacts from reducers contactsNumber
+})
+
+//Fot Use Actions
+const mapDispatchToProps = dispatch => ({
+
+})
+
+export default connect(mapStateToProps, mapDispatchToProps)(CreateNewChat)
 
 
 const styles = StyleSheet.create({

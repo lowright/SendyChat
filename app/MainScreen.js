@@ -3,7 +3,7 @@ import React, {Component} from 'react';
 import Navigation from './route/routerChat'
 import { LoaderScreen } from 'react-native-ui-lib';
 
-class MainScreen extends Component {
+export default  class MainScreen extends Component {
   
   constructor(props) {
     super(props);
@@ -36,5 +36,3 @@ class MainScreen extends Component {
   }
 
 }
-
-export default MainScreen
