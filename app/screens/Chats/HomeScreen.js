@@ -79,10 +79,7 @@ class HomeScreen extends React.Component {
 
     createNewChat = () => {
         this.setState({showDialog: false});
-        this
-            .props
-            .navigation
-            .navigate('CreateNewChat')
+        this.props.navigation.navigate('CreateNewChat')
     }
 
     renderContent = () => {
