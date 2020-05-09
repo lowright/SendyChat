@@ -1,10 +1,15 @@
 import { combineReducers } from 'redux'
-import contactsNumber from './contactsNumber'
+import { userData } from './userData'
+import { userDialog } from './userDialog'
+import { userDirectMess } from './userDirectMess'
 
-const rootReducers = combineReducers(
-    {
-        contactsNumber,
-    }
-)
+
+const rootReducers = combineReducers({
+    userData,
+    userDialog,
+    userDirectMess,
+})
 
 export default rootReducers
+
+ 

@@ -38,7 +38,7 @@ class RegistrationScreen extends Component {
         })
       };
       try {
-        const data = await fetch(`https://secret-peak-55840.herokuapp.com/api/v1/register`, settings);
+        const data = await fetch(`https://nameless-forest-37690.herokuapp.com/api/v1/register`, settings);
         const json = await data.json()
         
         if(JSON.stringify(json.access_token)){

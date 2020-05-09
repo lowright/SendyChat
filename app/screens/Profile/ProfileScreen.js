@@ -4,100 +4,53 @@ import {Header} from 'react-native-elements'
 import AsyncStorage from '@react-native-community/async-storage';
 import { ScrollView } from 'react-native-gesture-handler';
 import Icon from '../../components/Icon'
+import {connect} from 'react-redux'
+import dataUserFetch from '../../actions/userDataAction'
 
 
-class ProfileScreen extends React.Component {
+class ProfileScreen extends Component {
 
   static navigationOptions = {
     title: 'Профиль ',
-  };
-
-  constructor(props){
-    super(props)
-
-    this.state = {
-      isLoading : true,
-      error : '',
-      userName : '',
-      userLastName : '',
-      userToken : '',
-      nickname : '',
-      aboutUser : '',
-      userAvatar : '',
-      userPhone  : ''
-    }
-
-    
   }
 
+  state = {
+    token : '',
+  }
 
-  getDateuser = async () => {
+  setToken = async () => {
     const res = await AsyncStorage.getItem('userToken');
     const token = res.slice(1,-1)
-    const settings = {
-      method: 'GET',
-      headers: {
-        'Accept': 'application/json',
-        'Authorization': 'Bearer ' + token
-      },
-    };
-    try {
-      const res = await fetch(`https://secret-peak-55840.herokuapp.com/api/v1/user`, settings);
-      const data = await res.json()
-      this.setState({
-        isLoading: false,
-        userName : data.firstname,
-        userLastName : data.lastname,
-        userPhone : data.phone,
-        nickname : data.nickname,
-        aboutUser : data.aboutme,
-        userAvatar : data.avatar
-      })
-    } catch (error) {
-      alert(error)
-    }
+    this.setState({token})
   }
 
-  async componentDidMount (){
-    await this.getDateuser()
-    await AsyncStorage.setItem('name', this.state.userName);
+  async componentDidMount (){ 
+      try {
+          await this.setToken()
+          await this.props.fetchData("https://nameless-forest-37690.herokuapp.com/api/v1/user", {
+              method: 'GET',
+              headers: {
+              'Accept': 'application/json',
+              'Authorization': 'Bearer ' + this.state.token
+              }, 
+          })
+      }
+      catch (err) {
+          console.log(err)
+      }
   }
-
-
-  patchUserInfo = async () => {
-    const res = await AsyncStorage.getItem('userToken');
-    const token = res.slice(1,-1)
-    const settings = {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type' : 'application/json',
-        'Authorization': 'Bearer ' + token
-      },
-      body : JSON.stringify({
-        nickname : this.state.nickname,
-        firstname : this.state.userName,
-        phone : this.state.userPhone,
-        lastname : this.state.userLastName,
-        aboutme : this.state.aboutUser
-      })
-    };
-    try {
-      await fetch(`https://secret-peak-55840.herokuapp.com/api/v1/update_user`, settings);
-    } 
-    catch (error) { alert(error) }
-  }
-  
 
   render() {
-    const { isLoading, userName, userLastName, userPhone, nickname, aboutUser } = this.state;
-    if (isLoading) {
+    
+    const { isLoading } = this.props.user
+    if (isLoading === false) {
       return (
         <View style={styles.preloader}>
           <ActivityIndicator  color={'#000'} />
         </View>
       )
     }
+    const { firstname, lastname, aboutme, phone, nickname } = this.props.user.data
 
     return(
       <SafeAreaView  style={styles.container}>
@@ -118,21 +71,22 @@ class ProfileScreen extends React.Component {
             <TextInput 
               style={styles.userInfo}
               onChangeText={userName => this.setState({userName})}
-              value={userName}
+              value={firstname}
               placeholder={'Имя'}
             />
             <TextInput 
               style={styles.userInfo}
               onChangeText={userLastName => this.setState({userLastName})}
-              value={userLastName}
+              value={lastname}
               placeholder={'Фамилия'}
             />
           </View>
         </View>
+        
         <View style={styles.userContactInfo}>
           <TextInput 
             style={styles.userInfo}
-            value={userPhone}
+            value={phone}
             placeholder={'Номер телефона'}
             onChangeText={phone => this.setState({userPhone : phone})}
           />
@@ -145,7 +99,7 @@ class ProfileScreen extends React.Component {
           <TextInput 
             style={styles.userInfo}
             placeholder={'О себе'}
-            value={aboutUser}
+            value={aboutme}
             onChangeText={aboutUser => this.setState({aboutUser})}
           />
         </View>
@@ -153,7 +107,7 @@ class ProfileScreen extends React.Component {
          style={styles.profileButton}
           onPress={() => this.patchUserInfo()}
         >
-         <Text style={{fontSize : 14, textAlign : 'center'}}> Сохранить </Text>
+         <Text style={{fontSize : 14, textAlign : 'center'}}>user</Text>
        </TouchableOpacity>
 
        <TouchableOpacity
@@ -175,30 +129,23 @@ class ProfileScreen extends React.Component {
 
   }
 
-  _signOutAsync = async () => {
-    await AsyncStorage.clear();
-    this.props.navigation.navigate('Auth');
-  };
 
-  deleteUser = async () => {
-    const res = await AsyncStorage.getItem('userToken');
-    const token = res.slice(1,-1)
-    const settings = {
-      method: 'DELETE',
-      headers: {
-        'Authorization': 'Bearer ' + token
-      },
-    };
-    try {
-      await fetch(`https://frozen-oasis-23821.herokuapp.com/api/v1/deleteuser`, settings);
-      await AsyncStorage.clear();
-      this.props.navigation.navigate('Auth')
-    } 
-    catch (error) { alert(error) }
+}
+
+
+const mapStateToProps = state => {
+  return {
+    user : state.userData
   }
 }
 
-export default ProfileScreen
+const mapDispatchToProps = dispatch => {
+  return {
+    fetchData : (url, config) => dispatch(dataUserFetch(url, config))
+  }
+}
+
+export default connect( mapStateToProps, mapDispatchToProps )(ProfileScreen)
 
 
 const styles = StyleSheet.create({

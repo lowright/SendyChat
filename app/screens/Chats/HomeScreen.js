@@ -5,11 +5,16 @@ import {
     StyleSheet,
     FlatList,
     SafeAreaView,
-    Image
+    Image,
+    ActivityIndicator
 } from 'react-native'
-import {Header, List, ListItem} from 'react-native-elements'
+import {Header, List, ListItem, ThemeConsumer} from 'react-native-elements'
 import {Button, Dialog, Colors, PanningProvider, Constants} from 'react-native-ui-lib';
-import {TouchableOpacity} from 'react-native-gesture-handler';
+import AsyncStorage from '@react-native-community/async-storage';
+import {connect} from 'react-redux'
+import dialogsFetch from '../../actions/userDialogsAction'
+import Pusher from 'pusher-js/react-native';
+
 //Import Components
 import ChatList from '../../components/ChatList'
 import CreateChatIcon from '../../components/CreateChatIcon'
@@ -18,7 +23,7 @@ class HomeScreen extends React.Component {
 
     static navigationOptions = {
         title: 'Чаты '
-    };
+    }
 
     constructor(props) {
         super(props);
@@ -30,21 +35,6 @@ class HomeScreen extends React.Component {
         };
 
         this.state = {
-            loading: false,
-            data: [
-                {
-                    userName: 'Andrew Lutsenko',
-                    resentleMessage: 'Сегодня что делаешь?',
-                    date: new Date().getHours() + `.` + new Date().getMinutes(),
-                    id: '1'
-                }, 
-                {
-                    userName: 'Новый диалог',
-                    resentleMessage: '',
-                    date: new Date().getHours() + `.` + new Date().getMinutes(),
-                    id: '2'
-                }, 
-            ],
             panDirection: PanningProvider.Directions.UP,
             position: 'bottom',
             scroll: this.SCROLL_TYPE.NONE,
@@ -52,30 +42,65 @@ class HomeScreen extends React.Component {
             isRounded: true,
             showDialog: false
         };
+
+        Pusher.logToConsole = true;
     }
 
-    componentDidMount() {
-        this.state.data.push({
-            userName : 'New',
-            id : '3'
+    async ConnectedSocet(){
+        const res = await AsyncStorage.getItem('userToken');
+        const token = res.slice(1,-1)
+        this.pusher = new Pusher('2dd9afb004598ae19b67', {
+          activityTimeout: 60000,
+          cluster: 'mt1',
+          forceTLS: true,
+          authEndpoint: "https://nameless-forest-37690.herokuapp.com/broadcasting/auth",
+          auth:{
+            headers:{
+              'Authorization': 'Bearer ' + token,
+              'Access-Control-Allow-Origin': '*',
+            }
+          }
         })
+        this.messagesChanel = this.pusher.subscribe('private-messages.' + this.props.user.data.id)
+        this.messagesChanel.bind("App\\Events\\MessageSent", data => {
+          console.log('Event Data >>>>>>>>>' + JSON.stringify(data))
+        })
+    }
+
+    async componentDidMount() {
+        await this.getDialogs()
+        await this.ConnectedSocet()
+    }
+
+    async getDialogs() {
+        const res = await AsyncStorage.getItem('userToken');
+        const token = res.slice(1,-1)
+        try {
+            await this.props.fetchData("https://nameless-forest-37690.herokuapp.com/api/v1/get_users", {
+                method: 'GET',
+                headers: {
+                'Accept': 'application/json',
+                'Authorization': 'Bearer ' + token
+                }, 
+            })
+        }
+        catch (err) {
+            console.log(err)
+        }
     }
     
 
-    logInChat = () => {
-        this
-            .props
-            .navigation
-            .navigate('PrivatChat')
+    logInChat = id => {
+        this.props.navigation.navigate('PrivatChat', { id })
     }
 
     showDialog = () => {
         this.setState({showDialog: true});
-    };
+    }
 
     hideDialog = () => {
         this.setState({showDialog: false});
-    };
+    }
 
     createNewChat = () => {
         this.setState({showDialog: false});
@@ -121,12 +146,12 @@ class HomeScreen extends React.Component {
 
             </View>
         )
-    };
+    }
 
     getDialogKey = height => {
         const {position} = this.state;
         return `dialog-key-${position}-${height}`;
-    };
+    }
 
     renderDialog = () => {
         const {
@@ -164,9 +189,20 @@ class HomeScreen extends React.Component {
                 {this.renderContent()}
             </Dialog>
         );
-    };
+    }
 
     render() {
+
+        const { isLoading, data } = this.props.dialog
+
+        if (isLoading === false) {
+            return (
+                <View style={styles.preloader}>
+                    <ActivityIndicator  color={'#000'} />
+                </View>
+            )
+        }
+
         return (
             <SafeAreaView style={{ flex: 1}}>
                 <Header
@@ -183,21 +219,38 @@ class HomeScreen extends React.Component {
                 {this.renderDialog()}
 
                 <FlatList
-                    data={this.state.data}
-                    renderItem={({item}) => <ChatList
-                        userName={item.userName}
-                        resentleMessage={item.resentleMessage}
-                        date={item.date}
-                        logInChat={this.logInChat}
-                    />}
-                    keyExtractor={item => item.id}
+                    data={data}
+                    renderItem={({item}) => 
+                        <ChatList
+                            userName={item.nickname}
+                            resentleMessage={item.phone}
+                            // date={item.date}
+                            logInChat={() => this.logInChat(item.id)}
+                        />
+                    }
+                    keyExtractor={item => `${item.id}`}
                 />
             </SafeAreaView>
         );
     }
 }
 
-export default HomeScreen
+const mapStateToProps = state => {
+    console.log('Set Props From Store >>>>>>>>')
+    console.log(JSON.stringify(state))
+    return {
+        dialog : state.userDialog,
+        user : state.userData
+    }
+}
+const mapDispatchToProps = dispatch => {
+    return {
+        fetchData : (url, config) => dispatch(dialogsFetch(url, config))
+    }
+}
+  
+export default connect( mapStateToProps,mapDispatchToProps )(HomeScreen)
+  
 
 const styles = StyleSheet.create({
     container: {

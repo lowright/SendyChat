@@ -70,7 +70,7 @@ class CreateNewChat extends PureComponent{
       }
     };
     try {
-      const res = await fetch(`https://secret-peak-55840.herokuapp.com/api/v1/get_sendychat_users_numbers`, settings);
+      const res = await fetch(`https://nameless-forest-37690.herokuapp.com/api/v1/get_sendychat_users_numbers`, settings);
       const data = await res.json()
       console.log(data)
     } catch (error) {

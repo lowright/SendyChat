@@ -1,11 +1,46 @@
 import React, {Component} from 'react'
 import {Text, View, Button, StyleSheet, TouchableOpacity} from 'react-native'
 import AsyncStorage from '@react-native-community/async-storage';
-
+import {connect} from 'react-redux'
+import dataUserFetch from '../../actions/userDataAction'
 class StartWorkingScreen extends Component {
     static navigationOptions = {
         title: 'Start Working'
     };
+
+    constructor(props) {
+        super(props)
+    
+        this.state = {
+          token : '',
+        }
+    }
+
+    setToken = async () => {
+        const res = await AsyncStorage.getItem('userToken');
+        const token = res.slice(1,-1)
+        this.setState({token})
+      }
+    
+    async componentDidMount (){ 
+        try {
+            console.log('componentDidMount () >>>>' )
+            console.log('setToken() >>>>' )
+            await this.setToken()
+            console.log('fetchData() >>>>' )
+            await this.props.fetchData("https://nameless-forest-37690.herokuapp.com/api/v1/user", {
+                method: 'GET',
+                headers: {
+                'Accept': 'application/json',
+                'Authorization': 'Bearer ' + this.state.token
+                }, 
+            })
+            console.log('setState isLoading : true  >>>>' )
+        }
+        catch (err) {
+            console.log(err)
+        }
+    }
 
     render() {
         return (
@@ -31,7 +66,21 @@ class StartWorkingScreen extends Component {
 
 }
 
-export default StartWorkingScreen
+const mapStateToProps = state => {
+    console.log('Set Props From Store >>>>>>>>')
+    console.log(JSON.stringify(state))
+    return {
+      user : state.userData
+    }
+}
+
+const mapDispatchToProps = dispatch => {
+
+return {fetchData : (url, config) => dispatch(dataUserFetch(url, config))}
+}
+
+export default connect( mapStateToProps, mapDispatchToProps )(StartWorkingScreen)
+
 
 const styles = StyleSheet.create({
     container: {

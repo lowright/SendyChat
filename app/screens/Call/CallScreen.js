@@ -1,19 +1,29 @@
 import React, {Component} from 'react'
 import {View, Text, StyleSheet} from 'react-native'
+import {connect} from 'react-redux'
 
 class CallScreen extends Component {
 
     render () {
         return (
             <View style={styles.container}>
-                <Text>Call Screen</Text>
+                <Text>{this.props.user.data.nickname}</Text>
             </View>
         )
     }
 
 }
 
-export default CallScreen
+
+const mapStateToProps = state => {
+    return {
+      user : state.userData
+    }
+}
+  
+export default connect( mapStateToProps,  )(CallScreen)
+  
+  
 
 const styles = StyleSheet.create({
     container : {
