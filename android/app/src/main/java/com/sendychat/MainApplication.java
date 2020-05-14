@@ -11,6 +11,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import com.oblador.vectoricons.VectorIconsPackage;
 import com.rt2zz.reactnativecontacts.ReactNativeContacts;
+import com.oney.WebRTCModule.WebRTCModulePackage; 
 
 public class MainApplication extends Application implements ReactApplication {
 
@@ -25,7 +26,6 @@ public class MainApplication extends Application implements ReactApplication {
         protected List<ReactPackage> getPackages() {
           @SuppressWarnings("UnnecessaryLocalVariable")
           List<ReactPackage> packages = new PackageList(this).getPackages();
-          // packages.add(new ReactNativeContacts()););
           return packages;
         }
 
@@ -34,6 +34,8 @@ public class MainApplication extends Application implements ReactApplication {
           return "index";
         }
       };
+
+  
 
   @Override
   public ReactNativeHost getReactNativeHost() {
