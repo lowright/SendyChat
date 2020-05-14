@@ -45,12 +45,10 @@ import {
     };
   
     const startCall = async () => {
-      // You'll most likely need to use a STUN server at least. Look into TURN and decide if that's necessary for your project
       const configuration = {iceServers: [{url: 'stun:stun.l.google.com:19302'}]};
       const localPC = new RTCPeerConnection(configuration);
       const remotePC = new RTCPeerConnection(configuration);
   
-      // could also use "addEventListener" for these callbacks, but you'd need to handle removing them as well
       localPC.onicecandidate = e => {
         try {
           console.log('localPC icecandidate:', e.candidate);
@@ -79,8 +77,7 @@ import {
         }
       };
   
-      // AddTrack not supported yet, so have to use old school addStream instead
-      // newStream.getTracks().forEach(track => localPC.addTrack(track, newStream));
+      // AddTrack not supported have to use old school addStream instead
       localPC.addStream(localStream);
         try {
             const offer = await localPC.createOffer();
@@ -106,7 +103,7 @@ import {
       localStream.getVideoTracks().forEach(track => track._switchCamera());
     };
   
-    // Mutes the local's outgoing audio
+    // Mutes the locals outgoing audio
     const toggleMute = () => {
       if (!remoteStream) return;
       localStream.getAudioTracks().forEach(track => {
