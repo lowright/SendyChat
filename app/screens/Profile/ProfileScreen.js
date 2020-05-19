@@ -40,6 +40,11 @@ class ProfileScreen extends Component {
       }
   }
 
+  _signOutAsync = async () => {
+    await AsyncStorage.clear();
+    this.props.navigation.navigate('Auth');
+  };
+
   render() {
     
     const { isLoading } = this.props.user

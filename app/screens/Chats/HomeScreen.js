@@ -15,6 +15,7 @@ import {connect} from 'react-redux'
 import dialogsFetch from '../../actions/userDialogsAction'
 import Pusher from 'pusher-js/react-native';
 
+
 //Import Components
 import ChatList from '../../components/ChatList'
 import CreateChatIcon from '../../components/CreateChatIcon'
@@ -40,7 +41,8 @@ class HomeScreen extends React.Component {
             scroll: this.SCROLL_TYPE.NONE,
             showHeader: true,
             isRounded: true,
-            showDialog: false
+            showDialog: false,
+            mess : []
         };
 
         Pusher.logToConsole = true;
@@ -63,7 +65,7 @@ class HomeScreen extends React.Component {
         })
         this.messagesChanel = this.pusher.subscribe('private-messages.' + this.props.user.data.id)
         this.messagesChanel.bind("App\\Events\\MessageSent", data => {
-          console.log('Event Data >>>>>>>>>' + JSON.stringify(data))
+          this.setState({mess : data})
         })
     }
 
