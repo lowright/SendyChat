@@ -48,37 +48,15 @@ class HomeScreen extends React.Component {
         Pusher.logToConsole = true;
     }
 
-    async ConnectedSocet(){
-        const res = await AsyncStorage.getItem('userToken');
-        const token = res.slice(1,-1)
-        this.pusher = new Pusher('2dd9afb004598ae19b67', {
-          activityTimeout: 60000,
-          cluster: 'mt1',
-          forceTLS: true,
-          authEndpoint: "https://nameless-forest-37690.herokuapp.com/broadcasting/auth",
-          auth:{
-            headers:{
-              'Authorization': 'Bearer ' + token,
-              'Access-Control-Allow-Origin': '*',
-            }
-          }
-        })
-        this.messagesChanel = this.pusher.subscribe('private-messages.' + this.props.user.data.id)
-        this.messagesChanel.bind("App\\Events\\MessageSent", data => {
-          this.setState({mess : data})
-        })
-    }
-
     async componentDidMount() {
         await this.getDialogs()
-        await this.ConnectedSocet()
     }
 
     async getDialogs() {
         const res = await AsyncStorage.getItem('userToken');
         const token = res.slice(1,-1)
         try {
-            await this.props.fetchData("https://nameless-forest-37690.herokuapp.com/api/v1/get_users", {
+            await this.props.fetchData("https://infinite-beyond-48165.herokuapp.com/api/v1/get_users", {
                 method: 'GET',
                 headers: {
                 'Accept': 'application/json',
@@ -226,11 +204,10 @@ class HomeScreen extends React.Component {
                         <ChatList
                             userName={item.nickname}
                             resentleMessage={item.phone}
-                            // date={item.date}
-                            logInChat={() => this.logInChat(item.id)}
+                            logInChat={() => this.logInChat(item._id)}
                         />
                     }
-                    keyExtractor={item => `${item.id}`}
+                    keyExtractor={item => `${item._id}`}
                 />
             </SafeAreaView>
         );

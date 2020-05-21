@@ -109,7 +109,7 @@ const ConfirmCode =  ({navigation}) => {
           })
         };
         try {
-          const data = await fetch(`https://nameless-forest-37690.herokuapp.com/api/v1/checksmscode`, settings);
+          const data = await fetch(`https://infinite-beyond-48165.herokuapp.com/api/v1/checksmscode`, settings);
           const json = await data.json()
           if(JSON.stringify(data.status) === "400"){
             await navigation.navigate('Registration', {phone : navigationProps.phone})

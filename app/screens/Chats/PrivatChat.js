@@ -1,5 +1,5 @@
-import React, {Component} from 'react'
-import {View, Text, StyleSheet} from 'react-native'
+import React, {Component, PureComponent} from 'react'
+import {FlatList, Text, StyleSheet, TextInput, View, TouchableOpacity} from 'react-native'
 import { GiftedChat } from 'react-native-gifted-chat'
 import {Header, Avatar, ThemeConsumer} from 'react-native-elements'
 import AsyncStorage from '@react-native-community/async-storage';
@@ -7,6 +7,8 @@ import Icon from '../../components/Icon';
 import Pusher from 'pusher-js/react-native';
 import messagesFetch from '../../actions/userDirectMessagesAction'
 import {connect} from 'react-redux'
+import { gotNewMessage, sendNewMessage } from '../../reducers/userDirectMess';
+import { Button } from 'react-native-paper';
 
 class PrivatChat extends Component {
 
@@ -15,18 +17,18 @@ class PrivatChat extends Component {
 
     this.state = {
       mess: [], //Obj
+      sendMess : '',
+      token : ''
     }
 
     Pusher.logToConsole = true;
 
   }
 
-  
-  
 
   async getDirectMessages() {
     try {
-      await this.props.fetchData(`https://nameless-forest-37690.herokuapp.com/api/v1/get_direct_messages/user/${this.state.participentID}`, {
+      await this.props.fetchData(`https://infinite-beyond-48165.herokuapp.com/api/v1/get_direct_messages/user/${this.state.participentID}`, {
         method: 'GET',
         headers: {
           'Accept': 'application/json',
@@ -43,11 +45,11 @@ class PrivatChat extends Component {
   async ConnectedSocet(){
     const res = await AsyncStorage.getItem('userToken');
     const token = res.slice(1,-1)
-    this.pusher = new Pusher('2dd9afb004598ae19b67', {
-      activityTimeout: 60000,
+    this.pusher = new Pusher('2660d511fb82c18d277f', {
+      activityTimeout: 6000,
       cluster: 'mt1',
       forceTLS: true,
-      authEndpoint: "https://nameless-forest-37690.herokuapp.com/broadcasting/auth",
+      authEndpoint: "https://infinite-beyond-48165.herokuapp.com/broadcasting/auth",
       auth:{
         headers:{
           'Authorization': 'Bearer ' + token,
@@ -55,32 +57,65 @@ class PrivatChat extends Component {
         }
       }
     })
-    this.messagesChanel = this.pusher.subscribe('private-messages.' + this.props.user.data.id)
+    this.setState({pusher : this.pusher})
+    this.messagesChanel = this.pusher.subscribe('private-messages.' + this.props.user.data._id)
     this.messagesChanel.bind("App\\Events\\MessageSent", data => {
-      this.setState({mess : this.state.mess + data})
+      console.log('SOCET >>>>' + data)
+      this.props.newMessages(data)
     })
   }
   
   
   async componentDidMount() {
+
     const { navigation }  = this.props;
     const navigationProps = navigation.state.params;
-    console.log(navigationProps.id)
     const res = await AsyncStorage.getItem('userToken');
     const token = res.slice( 1, -1 )
     this.setState({
       token,
       participentID : navigationProps.id
     })
+
+
+
     console.log('<<<<<< getDirectMessages() >>>>>')
-    // await this.getDirectMessages()
+    await this.getDirectMessages()
     await this.ConnectedSocet()
 
   }
-  
-  
+
+  shouldComponentUpdate(nextProps, nextState) {
+    if(nextProps == nextProps) {
+      return true
+    }
+    console.log(nextProps.directMess)
+    console.log(nextState)
+    return false
+  }
+
+  async componentWillUnmount() {
+    this.state.pusher.unsubscribe('private-messages.' + this.props.user.data._id)
+  }
+
+  send(messages) {
+    fetch('https://infinite-beyond-48165.herokuapp.com/api/v1/send_direct_message', {
+            method: 'POST',
+            headers: {
+                'Authorization': 'Bearer ' + this.state.token,
+                'Content-Type' : 'application/json'
+            },
+            body: JSON.stringify({
+              "text": messages[0]['text'],
+              "to_id": this.props.receiver
+            })
+          })
+           
+          .catch( error => console.log( 'Eroooooooe' + error ) )
+  }
+
   render() {
-    
+    const {directMess} = this.props
     return (
       <>
         <Header
@@ -89,11 +124,21 @@ class PrivatChat extends Component {
           rightComponent={<Avatar rounded title={this.state.id} />}
           containerStyle={styles.header}
         />
-        <Text>{JSON.stringify(this.state.mess)}</Text>
-        {/* <GiftedChat
-          messages={this.props.state.userDirectMess}
-          user={{_id: `${this.props.user.data.id}`}}
-        /> */}
+        <GiftedChat
+          messages={directMess}
+          user={{_id: `${this.props.user.data._id}`}}
+          onSend={messages => this.onSend(messages)}
+          placeholder='Type your message here...'
+          inverted={false}
+          
+        onSend={messages => this.send(messages)}
+          // onSend={messages => 
+          //   this.props.sendNewMess(
+          //     messages,
+          //     `https://nameless-forest-37690.herokuapp.com/api/v1/send_direct_message`,
+          //     this.state.token
+          //   )}
+        />
       </>
     )
   }
@@ -101,19 +146,21 @@ class PrivatChat extends Component {
 }
 
 
+
 const mapStateToProps = ( state, {navigation} ) => {
   console.log('Set Props From Store >>>>>>>>')
-  // console.log(JSON.stringify(state.directMess))
+  console.log(JSON.stringify(state.userDirectMess.data))
   return {
-    directMess : state.userDirectMess,
+    directMess : state.userDirectMess.data,
     user : state.userData,
-    messages: state.messages,
     receiver: navigation.getParam('id')
   }
 }
 const mapDispatchToProps = dispatch => {
   return {
     fetchData : (url, config) => dispatch(messagesFetch(url, config)),
+    newMessages : mess => dispatch(gotNewMessage(mess)),
+    sendNewMess : (mess, url = String, token) => dispatch(sendNewMessage(mess, url, token))
   }
 }
 
