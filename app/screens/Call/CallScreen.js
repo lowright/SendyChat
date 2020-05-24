@@ -23,7 +23,6 @@ export default function CallScreen() {
   const startLocalStream = async () => {
     
     //isFront определит, должна ли исходная камера быть лицом к пользователю или среде
-    // isFront will determine if the initial camera should face user or environment
     const isFront = true;
     const devices = await mediaDevices.enumerateDevices();
 
@@ -48,14 +47,10 @@ export default function CallScreen() {
 
   const startCall = async () => {
     
-    // Скорее всего, вам понадобится хотя бы использовать сервер STUN. Посмотрите в TURN и решить, если это необходимо для вашего проекта
-    // You'll most likely need to use a STUN server at least. Look into TURN and decide if that's necessary for your project
     const configuration = {iceServers: [{url: 'stun:stun.l.google.com:19302'}]};
     const localPC = new RTCPeerConnection(configuration);
     const remotePC = new RTCPeerConnection(configuration);
 
-    //также можно использовать «addEventListener» для этих обратных вызовов, но вам также потребуется обработать их удаление
-    // could also use "addEventListener" for these callbacks, but you'd need to handle removing them as well
     localPC.onicecandidate = e => {
       try {
         console.log('localPC icecandidate:', e.candidate);
@@ -84,9 +79,6 @@ export default function CallScreen() {
       }
     };
 
-    //AddTrack пока не поддерживается, поэтому вместо него придется использовать старую школу addStream
-    // AddTrack not supported yet, so have to use old school addStream instead
-    // newStream.getTracks().forEach(track => localPC.addTrack(track, newStream));
     localPC.addStream(localStream);
       try {
           const offer = await localPC.createOffer();
@@ -112,7 +104,6 @@ export default function CallScreen() {
     localStream.getVideoTracks().forEach(track => track._switchCamera());
   };
 
-  // Mutes the local's outgoing audio
   const toggleMute = () => {
     if (!remoteStream) return;
     localStream.getAudioTracks().forEach(track => {
