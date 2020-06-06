@@ -6,10 +6,10 @@ import { Container, Item, Input } from 'native-base'
 import data from '../../static/countries'
 
 // Default render of country flag
-const defaultFlag = data.filter(obj => obj.name === 'Ukraine')[0].flag
+const defaultFlag = data.filter(obj => obj.name === 'Russia')[0].flag
 
 // Default render of country code
-const defaultCode = data.filter(obj => obj.name === 'Ukraine')[0].dial_code
+const defaultCode = data.filter(obj => obj.name === 'Russia')[0].dial_code
 
 class SingInScreen extends React.Component {
 
@@ -50,7 +50,7 @@ class SingInScreen extends React.Component {
       body: JSON.stringify({phone})
   };
     try {
-      const data = await fetch(`https://infinite-beyond-48165.herokuapp.com/api/v1/sendphone`, settings);
+      const data = await fetch(`https://intense-plateau-05807.herokuapp.com/api/v1/sendphone`, settings);
       const json = await data.json()
       if(JSON.stringify(data.status) === '200'){
         this.props.navigation.navigate('ConfirmCode', {phone})
@@ -130,7 +130,7 @@ class SingInScreen extends React.Component {
                   :
                   <Animated.Image 
                     source={require('../../assaets/images/logo.png')}  
-                    style={{ opacity: fadeOut, width: 200.46, height: 200 }}/>
+                    style={{ opacity: fadeOut, width: 400.46, height: 200 }}/>
                 }
                 </View>
                 <Text style={styles.title}>Для авторизации или регистрации введите номер телефона</Text>

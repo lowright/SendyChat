@@ -38,7 +38,7 @@ class RegistrationScreen extends Component {
         })
       };
       try {
-        const data = await fetch(`https://infinite-beyond-48165.herokuapp.com/api/v1/register`, settings);
+        const data = await fetch(`https://intense-plateau-05807.herokuapp.com/api/v1/register`, settings);
         const json = await data.json()
         
         if(JSON.stringify(json.access_token)){

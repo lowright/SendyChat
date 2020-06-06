@@ -70,7 +70,7 @@ class CreateNewChat extends PureComponent{
       }
     };
     try {
-      const res = await fetch(`https://infinite-beyond-48165.herokuapp.com/api/v1/get_sendychat_users_numbers`, settings);
+      const res = await fetch(`https://intense-plateau-05807.herokuapp.com/api/v1/get_sendychat_users_numbers`, settings);
       const data = await res.json()
       console.log(data)
     } catch (error) {

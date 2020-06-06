@@ -1,190 +1,302 @@
-import React, {Component} from 'react'
-import {View, SafeAreaView, Button, StyleSheet} from 'react-native';
-import {connect} from 'react-redux'
+import React from 'react';
 import {
-    RTCPeerConnection,
-    RTCIceCandidate,
-    RTCSessionDescription,
-    RTCView,
-    MediaStream,
-    MediaStreamTrack,
-    mediaDevices,
-    registerGlobals
-  } from 'react-native-webrtc';
+  SafeAreaView,
+  StyleSheet,
+  ScrollView,
+  View,
+  Text,
+  StatusBar,
+  TouchableOpacity,
+  Dimensions,
+} from 'react-native';
 
-export default function CallScreen() {
-  const [localStream, setLocalStream] = React.useState();
-  const [remoteStream, setRemoteStream] = React.useState();
-  const [cachedLocalPC, setCachedLocalPC] = React.useState();
-  const [cachedRemotePC, setCachedRemotePC] = React.useState();
+import {
+  RTCPeerConnection,
+  RTCIceCandidate,
+  RTCSessionDescription,
+  RTCView,
+  MediaStream,
+  MediaStreamTrack,
+  mediaDevices,
+  registerGlobals
+} from 'react-native-webrtc';
 
-  const [isMuted, setIsMuted] = React.useState(false);
+import io from 'socket.io-client'
 
-  const startLocalStream = async () => {
-    
-    //isFront определит, должна ли исходная камера быть лицом к пользователю или среде
-    // isFront will determine if the initial camera should face user or environment
-    const isFront = true;
-    const devices = await mediaDevices.enumerateDevices();
+const dimensions = Dimensions.get('window')
 
-    const facing = isFront ? 'front' : 'environment';
-    const videoSourceId = devices.find(device => device.kind === 'videoinput' && device.facing === facing);
-    const facingMode = isFront ? 'user' : 'environment';
-    const constraints = {
-      audio: true,
-      video: {
-        mandatory: {
-          minWidth: 500, // Provide your own width, height and frame rate here
-          minHeight: 300,
-          minFrameRate: 30,
-        },
-        facingMode,
-        optional: videoSourceId ? [{sourceId: videoSourceId}] : [],
-      },
-    };
-    const newStream = await mediaDevices.getUserMedia(constraints);
-    setLocalStream(newStream);
-  };
+export default class CallScreen extends React.Component {
+  constructor(props) {
+    super(props)
 
-  const startCall = async () => {
-    
-    // Скорее всего, вам понадобится хотя бы использовать сервер STUN. Посмотрите в TURN и решить, если это необходимо для вашего проекта
-    // You'll most likely need to use a STUN server at least. Look into TURN and decide if that's necessary for your project
-    const configuration = {iceServers: [{url: 'stun:stun.l.google.com:19302'}]};
-    const localPC = new RTCPeerConnection(configuration);
-    const remotePC = new RTCPeerConnection(configuration);
+    this.state = {
+      localStream: null,
+      remoteStream: null,
+    }
 
-    //также можно использовать «addEventListener» для этих обратных вызовов, но вам также потребуется обработать их удаление
-    // could also use "addEventListener" for these callbacks, but you'd need to handle removing them as well
-    localPC.onicecandidate = e => {
-      try {
-        console.log('localPC icecandidate:', e.candidate);
-        if (e.candidate) {
-          remotePC.addIceCandidate(e.candidate);
+    this.sdp
+    this.socket = null
+    this.candidates = []
+  }
+
+  componentDidMount = () => {
+
+    this.socket = io.connect(
+      'https://a735f6c9b2d7.ngrok.io/webrtcPeer',
+      {
+        path: '/io/webrtc',
+        query: {}
+      }
+    )
+
+    this.socket.on('connection-success', success => {
+      console.log(success)
+    })
+
+    this.socket.on('offerOrAnswer', (sdp) => {
+
+      this.sdp = JSON.stringify(sdp)
+
+      this.pc.setRemoteDescription(new RTCSessionDescription(sdp))
+    })
+
+    this.socket.on('candidate', (candidate) => {
+      this.pc.addIceCandidate(new RTCIceCandidate(candidate))
+    })
+
+    const pc_config = {
+      "iceServers": [
+        {
+          urls: 'stun:stun.l.google.com:19302'
         }
-      } catch (err) {
-        console.error(`Error adding remotePC iceCandidate: ${err}`);
+      ]
+    }
+
+    this.pc = new RTCPeerConnection(pc_config)
+
+    this.pc.onicecandidate = (e) => {
+      if (e.candidate) {
+        // console.log(JSON.stringify(e.candidate))
+        this.sendToPeer('candidate', e.candidate)
       }
-    };
-    remotePC.onicecandidate = e => {
-      try {
-        console.log('remotePC icecandidate:', e.candidate);
-        if (e.candidate) {
-          localPC.addIceCandidate(e.candidate);
+    }
+
+    // triggered when there is a change in connection state
+    this.pc.oniceconnectionstatechange = (e) => {
+      console.log(e)
+    }
+
+    this.pc.onaddstream = (e) => {
+      this.setState({
+        remoteStream: e.stream
+      })
+    }
+    
+    const success = (stream) => {
+      console.log(stream.toURL())
+      this.setState({
+        localStream: stream
+      })
+      this.pc.addStream(stream)
+    }
+
+    const failure = (e) => {
+      console.log('getUserMedia Error: ', e)
+    }
+
+    let isFront = true;
+    mediaDevices.enumerateDevices().then(sourceInfos => {
+      console.log(sourceInfos);
+      let videoSourceId;
+      for (let i = 0; i < sourceInfos.length; i++) {
+        const sourceInfo = sourceInfos[i];
+        if (sourceInfo.kind == "videoinput" && sourceInfo.facing == (isFront ? "front" : "environment")) {
+          videoSourceId = sourceInfo.deviceId;
         }
-      } catch (err) {
-        console.error(`Error adding localPC iceCandidate: ${err}`);
       }
-    };
-    remotePC.onaddstream = e => {
-      console.log('remotePC tracking with ', e);
-      if (e.stream && remoteStream !== e.stream) {
-        console.log('RemotePC received the stream', e.stream);
-        setRemoteStream(e.stream);
+
+      const constraints = {
+        audio: true,
+        video: {
+          mandatory: {
+            minWidth: 500, 
+            minHeight: 300,
+            minFrameRate: 30
+          },
+          facingMode: (isFront ? "user" : "environment"),
+          optional: (videoSourceId ? [{ sourceId: videoSourceId }] : [])
+        }
       }
-    };
 
-    //AddTrack пока не поддерживается, поэтому вместо него придется использовать старую школу addStream
-    // AddTrack not supported yet, so have to use old school addStream instead
-    // newStream.getTracks().forEach(track => localPC.addTrack(track, newStream));
-    localPC.addStream(localStream);
-      try {
-          const offer = await localPC.createOffer();
-          console.log('Offer from localPC, setLocalDescription');
-          await localPC.setLocalDescription(offer);
-          console.log('remotePC, setRemoteDescription');
-          await remotePC.setRemoteDescription(localPC.localDescription);
-          console.log('RemotePC, createAnswer');
-          const answer = await remotePC.createAnswer();
-          console.log(`Answer from remotePC: ${answer.sdp}`);
-          console.log('remotePC, setLocalDescription');
-          await remotePC.setLocalDescription(answer);
-          console.log('localPC, setRemoteDescription');
-          await localPC.setRemoteDescription(remotePC.localDescription);
-      } catch (err) {
-          console.error(err);
-      }
-      setCachedLocalPC(localPC);
-      setCachedRemotePC(remotePC);
-  };
-
-  const switchCamera = () => {
-    localStream.getVideoTracks().forEach(track => track._switchCamera());
-  };
-
-  // Mutes the local's outgoing audio
-  const toggleMute = () => {
-    if (!remoteStream) return;
-    localStream.getAudioTracks().forEach(track => {
-      console.log(track.enabled ? 'muting' : 'unmuting', ' local track', track);
-      track.enabled = !track.enabled;
-      setIsMuted(!track.enabled);
+      mediaDevices.getUserMedia(constraints)
+        .then(success)
+        .catch(failure);
     });
-  };
-
-  const closeStreams = () => {
-    if (cachedLocalPC) {
-      cachedLocalPC.removeStream(localStream);
-      cachedLocalPC.close();
+  }
+    sendToPeer = (messageType, payload) => {
+      this.socket.emit(messageType, {
+        socketID: this.socket.id,
+        payload
+      })
     }
-    if (cachedRemotePC) {
-      cachedRemotePC.removeStream(remoteStream);
-      cachedRemotePC.close();
-    }
-    setLocalStream();
-    setRemoteStream();
-    setCachedRemotePC();
-    setCachedLocalPC();
-  };
 
-  return (
-    <SafeAreaView style={styles.container}>
-      {!localStream && <Button title="Click to start stream" onPress={startLocalStream} />}
-      {localStream && <Button title="Click to start call" onPress={startCall} disabled={!!remoteStream} />}
-
-      {localStream && (
-        <View style={styles.toggleButtons}>
-          <Button title="Switch camera" onPress={switchCamera} />
-          <Button title={`${isMuted ? 'Unmute' : 'Mute'} stream`} onPress={toggleMute} disabled={!remoteStream} />
-        </View>
-      )}
-
-      <View style={styles.rtcview}>
-        {localStream && <RTCView style={styles.rtc} streamURL={localStream.toURL()} />}
-      </View>
-      <View style={styles.rtcview}>
-        {remoteStream && <RTCView style={styles.rtc} streamURL={remoteStream.toURL()} />}
-      </View>
-      <Button title="Click to stop call" onPress={closeStreams} disabled={!remoteStream} />
-    </SafeAreaView>
-  );
-}
+    createOffer = () => {
+      console.log('Offer')
   
-const styles = StyleSheet.create({
-    container: {
-        backgroundColor: '#313131',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        height: '100%',
-    },
-    text: {
-        fontSize: 30,
-    },
-    rtcview: {
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: '40%',
-        width: '80%',
-        backgroundColor: 'black',
-    },
-    rtc: {
-        width: '80%',
-        height: '100%',
-    },
-    toggleButtons: {
-        width: '100%',
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-    },
-});
+      this.pc.createOffer({ offerToReceiveVideo: 1 })
+        .then(sdp => {
+          // console.log(JSON.stringify(sdp))
+  
+          // set offer sdp as local description
+          this.pc.setLocalDescription(sdp)
+  
+          this.sendToPeer('offerOrAnswer', sdp)
+      })
+    }
+    
+    createAnswer = () => {
+      console.log('Answer')
+      this.pc.createAnswer({ offerToReceiveVideo: 1 })
+        .then(sdp => {
+          // console.log(JSON.stringify(sdp))
+  
+          // set answer sdp as local description
+          this.pc.setLocalDescription(sdp)
+  
+          this.sendToPeer('offerOrAnswer', sdp)
+      })
+    }
 
+    setRemoteDescription = () => {
+      const desc = JSON.parse(this.sdp)
+  
+      this.pc.setRemoteDescription(new RTCSessionDescription(desc))
+    }
+
+    addCandidate = () => {
+      this.candidates.forEach(candidate => {
+        console.log(JSON.stringify(candidate))
+        this.pc.addIceCandidate(new RTCIceCandidate(candidate))
+      });
+    }
+
+  render() {
+    const {
+      localStream,
+      remoteStream,
+    } = this.state
+
+    const remoteVideo = remoteStream ?
+      (
+        <RTCView
+          key={2}
+          mirror={true}
+          style={{ ...styles.rtcViewRemote }}
+          objectFit='contain'
+          streamURL={remoteStream && remoteStream.toURL()}
+        />
+      ) :
+      (
+        <View style={{ padding: 15, }}>
+          <Text style={{ fontSize:22, textAlign: 'center', color: 'white' }}>Подкл кандидата ....</Text>
+        </View>
+      )
+
+    return (
+      
+      <SafeAreaView style={{ flex: 1, }}>
+        <StatusBar backgroundColor="blue" barStyle={'dark-content'}/>
+          <View style={{...styles.buttonsContainer}}>
+            <View style={{ flex: 1, }}>
+              <TouchableOpacity onPress={this.createOffer}>
+                <View style={styles.button}>
+                  <Text style={{ ...styles.textContent, }}>Call</Text>
+                </View>
+              </TouchableOpacity>
+            </View>
+            <View style={{ flex: 1, }}>
+              <TouchableOpacity onPress={this.createAnswer}>
+                <View style={styles.button}>
+                  <Text style={{ ...styles.textContent, }}>Answer</Text>
+                </View>
+              </TouchableOpacity>
+            </View>
+          </View>
+          <View style={{ ...styles.videosContainer, }}>
+          <View style={{
+            position: 'absolute',
+            zIndex: 1,
+            bottom: 10,
+            right: 10,
+            width: 100, height: 200,
+            backgroundColor: 'black', //width: '100%', height: '100%'
+          }}>
+              <View style={{flex: 1 }}>
+                <TouchableOpacity onPress={() => localStream._tracks[1]._switchCamera()}>
+                  <View>
+                  <RTCView
+                    key={1}
+                    zOrder={0}
+                    objectFit='cover'
+                    style={{ ...styles.rtcView }}
+                    streamURL={localStream && localStream.toURL()}
+                    />
+                  </View>
+                </TouchableOpacity>
+              </View>
+          </View>
+          <ScrollView style={{ ...styles.scrollView }}>
+            <View style={{
+              flex: 1,
+              width: '100%',
+              backgroundColor: 'black',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}>
+              { remoteVideo }
+            </View>
+          </ScrollView>
+          </View>
+        </SafeAreaView>
+      );
+  }
+};
+
+const styles = StyleSheet.create({
+  buttonsContainer: {
+    flexDirection: 'row',
+  },
+  button: {
+    margin: 5,
+    paddingVertical: 10,
+    backgroundColor: 'lightgrey',
+    borderRadius: 5,
+  },
+  textContent: {
+    fontFamily: 'Avenir',
+    fontSize: 20,
+    textAlign: 'center',
+  },
+  videosContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    backgroundColor : 'grey'
+
+  },
+  rtcView: {
+    width: 100, 
+    height: 200,
+    backgroundColor: 'black',
+  },
+  scrollView: {
+    flex: 1,
+    // flexDirection: 'row',
+    padding: 15,
+  },
+  rtcViewRemote: {
+    width: dimensions.width - 30,
+    height: 200,
+    backgroundColor: 'black',
+  }
+});

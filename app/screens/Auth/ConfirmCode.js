@@ -109,7 +109,7 @@ const ConfirmCode =  ({navigation}) => {
           })
         };
         try {
-          const data = await fetch(`https://infinite-beyond-48165.herokuapp.com/api/v1/checksmscode`, settings);
+          const data = await fetch(`https://intense-plateau-05807.herokuapp.com/api/v1/checksmscode`, settings);
           const json = await data.json()
           if(JSON.stringify(data.status) === "400"){
             await navigation.navigate('Registration', {phone : navigationProps.phone})
@@ -147,23 +147,6 @@ const ConfirmCode =  ({navigation}) => {
         </SafeAreaView>
     );
 };
-
-// class ConfirmCode extends React.Component {
-//     static navigationOptions = {
-//       title: 'Confirm',
-//     };
-  
-//     render() {
-//       return (
-//         <View style={styles.container}>
-//           <Button title="Sign in!" onPress={this._signInAsync} />
-//           <Button title="Registration" onPress={() => this.props.navigation.navigate('Regist')} />
-//         </View>
-//       );
-//     }
-    
-   
-// }
 
 export default ConfirmCode
 

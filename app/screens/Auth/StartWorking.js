@@ -28,7 +28,7 @@ class StartWorkingScreen extends Component {
             console.log('setToken() >>>>' )
             await this.setToken()
             console.log('fetchData() >>>>' )
-            await this.props.fetchData("https://infinite-beyond-48165.herokuapp.com/api/v1/user", {
+            await this.props.fetchData("https://intense-plateau-05807.herokuapp.com/api/v1/user", {
                 method: 'GET',
                 headers: {
                 'Accept': 'application/json',

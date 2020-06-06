@@ -6,7 +6,8 @@ import {
     FlatList,
     SafeAreaView,
     Image,
-    ActivityIndicator
+    TextInput,
+    ActivityIndicator,
 } from 'react-native'
 import {Header, List, ListItem, ThemeConsumer} from 'react-native-elements'
 import {Button, Dialog, Colors, PanningProvider, Constants} from 'react-native-ui-lib';
@@ -56,7 +57,7 @@ class HomeScreen extends React.Component {
         const res = await AsyncStorage.getItem('userToken');
         const token = res.slice(1,-1)
         try {
-            await this.props.fetchData("https://infinite-beyond-48165.herokuapp.com/api/v1/get_users", {
+            await this.props.fetchData("https://intense-plateau-05807.herokuapp.com/api/v1/get_users", {
                 method: 'GET',
                 headers: {
                 'Accept': 'application/json',
@@ -70,17 +71,11 @@ class HomeScreen extends React.Component {
     }
     
 
-    logInChat = id => {
-        this.props.navigation.navigate('PrivatChat', { id })
+    logInChat = (id, nickname) => {
+        this.props.navigation.navigate('PrivatChat', { id, nickname })
     }
 
-    showDialog = () => {
-        this.setState({showDialog: true});
-    }
-
-    hideDialog = () => {
-        this.setState({showDialog: false});
-    }
+     
 
     createNewChat = () => {
         this.setState({showDialog: false});
@@ -170,6 +165,7 @@ class HomeScreen extends React.Component {
             </Dialog>
         );
     }
+    
 
     render() {
 
@@ -190,7 +186,8 @@ class HomeScreen extends React.Component {
                     text: 'Чаты',
                     style: {color: '#000',fontSize: 18 }
                 }}
-                    rightComponent={< CreateChatIcon openCreateSettModal = {
+                    rightComponent={
+                < CreateChatIcon openCreateSettModal = {
                     this.showDialog
                 } />}
                     containerStyle={styles.header}
@@ -198,13 +195,21 @@ class HomeScreen extends React.Component {
                 
                 {this.renderDialog()}
 
+                <TextInput
+                    style={{height: 20}}
+                    placeholder="Поиск по сообщениям, людям и каналам"
+                    onChangeText={text => text}
+                    style={styles.search}
+                />
+
                 <FlatList
                     data={data}
+                    ref='flatList'
                     renderItem={({item}) => 
                         <ChatList
                             userName={item.nickname}
                             resentleMessage={item.phone}
-                            logInChat={() => this.logInChat(item._id)}
+                            logInChat={() => this.logInChat(item.id, item.nickname)}
                         />
                     }
                     keyExtractor={item => `${item._id}`}
@@ -293,5 +298,13 @@ const styles = StyleSheet.create({
     buttonTitle: {
         marginLeft: 10,
         fontSize: 16
+    },
+    search : {
+        borderWidth : 1,
+        marginHorizontal : '12%',
+        borderRadius : 22,
+        textAlign : 'center',
+        padding : 0,
+        marginVertical : 10
     }
 })

@@ -1,39 +1,81 @@
 import { GiftedChat } from 'react-native-gifted-chat'
-import AsyncStorage from '@react-native-community/async-storage';
 
 const initialState = {
     isLoading : false,
-    data : []
+    data : [
+        {
+            _id: 2,
+            text: 'This is a quick reply. Do you love Gifted Chat? (checkbox)',
+            createdAt: new Date(),
+            quickReplies: {
+              type: 'checkbox', // or 'radio',
+              values: [
+                {
+                  title: 'Yes',
+                  value: 'yes',
+                },
+                {
+                  title: 'Yes, let me show you with a picture!',
+                  value: 'yes_picture',
+                },
+                {
+                  title: 'Nope. What?',
+                  value: 'no',
+                },
+              ],
+            },
+            user: {
+              _id: 2,
+              name: 'React Native',
+            },
+        },
+        {
+            _id: 11,
+            text: 'This is a quick reply. Do you love Gifted Chat? (radio) KEEP IT',
+            createdAt: new Date(),
+            quickReplies: {
+              type: 'radio', // or 'checkbox',
+              keepIt: true,
+              values: [
+                {
+                  title: '😋 Yes',
+                  value: 'yes',
+                },
+                {
+                  title: '📷 Yes, let me show you with a picture!',
+                  value: 'yes_picture',
+                },
+                {
+                  title: '😞 Nope. What?',
+                  value: 'no',
+                },
+              ],
+            },
+            user: {
+              _id: 2,
+              name: 'React Native',
+            },
+        },
+        {
+            _id: 21,
+            text: 'My message',
+            createdAt: new Date(Date.UTC(2016, 5, 11, 17, 20, 0)),
+            user: {
+              _id: 2,
+              name: 'React Native',
+              avatar: 'https://facebook.github.io/react/img/logo_og.png',
+            },
+            image: 'https://facebook.github.io/react/img/logo_og.png',
+            // You can also add a video prop:
+            video: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
+            // Any additional custom parameters are passed through
+          }
+    ]
 }
 
 
 export const gotNewMessage = mess => ({ type: 'NEW_MESSAGES', payload : mess });
-
-export const sendNewMessage = (mess, url, token) => {
-    console.log('SEND MESSAGES >>>>>>>' + JSON.stringify(mess))
- 
-    fetch(url, {
-        method: 'POST',
-        headers: {
-            'Authorization': 'Bearer ' + token,
-            'Access-Control-Allow-Origin': '*',
-        },
-        body: {
-            "text": mess[0]['text'],
-            "to_id": mess[0]['user']['_id']
-        }
-    })
-    .then(res => {
-        if(res.status !== 200) {
-            alert(res.statusText)
-        }
-        return res
-    })
-    .then( 
-        ({ type: 'NEW_MESSAGES', payload : mess })
-    )
-    .catch( error => console.log( 'Eroooooooe' + error ) )
-}
+export const sendNewMessage = mess => ({ type: 'SEND_NEW_MESSAGES', payload : mess })
 
  
 export function userDirectMess(state = initialState, action) {
@@ -42,7 +84,7 @@ export function userDirectMess(state = initialState, action) {
             return { 
                 ...state, 
                 isLoading : true, 
-                data: action.payload
+                data: state.data.concat(action.payload)
             }
 
         case 'NEW_MESSAGES':
@@ -54,7 +96,7 @@ export function userDirectMess(state = initialState, action) {
         case 'SEND_NEW_MESSAGES':
             return {
                 ...state,
-                data: GiftedChat.append(state.data.concat(action.payload)),
+                data: state.data.concat(action.payload),
             };
   
         default:

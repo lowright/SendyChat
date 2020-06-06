@@ -1,15 +1,12 @@
 import React, {Component} from 'react'
 import {Image, TouchableOpacity} from 'react-native'
 
-export const CreateChatIcon = ({src, press}) => {
-
+export const CreateChatIcon = ({src}) => {
     return (
-        <TouchableOpacity onPress={press} >
-            <Image
-                source={src}
-                style={{width : 18, height : 18}}
-            />
-        </TouchableOpacity>
+        <Image
+            source={`${src}`}
+            style={{width : 22, height : 22}}
+        />
     )
 
 }

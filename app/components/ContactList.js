@@ -16,6 +16,7 @@ import { TouchableOpacity, View } from 'react-native'
 import { Avatar } from 'react-native-elements';
 
 export const ContactsList = ({title, name, number, createChat}) => {
+	
     return (
 		<TouchableOpacity
 			onPress={() => createChat()}

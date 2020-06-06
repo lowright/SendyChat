@@ -1,6 +1,6 @@
 import React from 'react'
 import {View} from 'react-native'
-import { Icon } from 'react-native-elements'
+import { CreateChatIcon } from '../components/Icon'
 import { createSwitchNavigator, createAppContainer } from 'react-navigation';
 import { createStackNavigator } from 'react-navigation-stack';
 import { createBottomTabNavigator } from 'react-navigation-tabs';
@@ -61,7 +61,7 @@ const UserTabs = createBottomTabNavigator(
       navigationOptions: {
         tabBarIcon: () => (
           <View>
-            <Icon style={[{color: "#ad3gb"}]} size={25} name={'group'} />
+            <CreateChatIcon src={require('../assaets/images/contact1.png')}/>
           </View>
         ),
         activeColor: '#ffffff',
@@ -74,7 +74,7 @@ const UserTabs = createBottomTabNavigator(
       navigationOptions: {
         tabBarIcon: () => (
           <View>
-            <Icon style={[{color: "#ad3gb"}]} size={25} name={'call'} />
+            <CreateChatIcon src={require('../assaets/images/calls1.png')}/>
           </View>
         ),
         activeColor: '#ffffff',
@@ -87,7 +87,7 @@ const UserTabs = createBottomTabNavigator(
       navigationOptions: {
         tabBarIcon: () => (
           <View>
-            <Icon style={[{color: "#ad3gb"}]} size={25} name={'people-outline'} />
+            <CreateChatIcon src={require('../assaets/images/chat1.png')}/>
           </View>
         ),
         activeColor: '#ffffff',
@@ -100,7 +100,7 @@ const UserTabs = createBottomTabNavigator(
       navigationOptions: {
         tabBarIcon: () => (
           <View>
-            <Icon style={[{color: "#ad3gb"}]} size={25} name={'person-outline'} />
+            <CreateChatIcon src={require('../assaets/images/profile1.png')}/>
           </View>
         ),
         activeColor: '#ffffff',
@@ -113,7 +113,18 @@ const UserTabs = createBottomTabNavigator(
     initialRouteName: 'Profile',
     activeColor: '#000',
     inactiveColor: '#000',
-    barStyle: { backgroundColor: '#6948f4' },
+    tabBarOptions: {
+      activeTintColor: '#fff',
+    inactiveTintColor: 'grey',
+    style: {
+      backgroundColor: '#00AEEF',
+      },
+      labelStyle: {
+        fontSize: 13,
+    },
+
+    }
+    
   }
 );
 
