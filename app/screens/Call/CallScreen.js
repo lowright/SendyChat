@@ -1,5 +1,6 @@
 import React from 'react';
 import {
+<<<<<<< HEAD
   SafeAreaView,
   StyleSheet,
   ScrollView,
@@ -46,6 +47,65 @@ export default class CallScreen extends React.Component {
       {
         path: '/io/webrtc',
         query: {}
+=======
+    RTCPeerConnection,
+    RTCIceCandidate,
+    RTCSessionDescription,
+    RTCView,
+    MediaStream,
+    MediaStreamTrack,
+    mediaDevices,
+    registerGlobals
+  } from 'react-native-webrtc';
+
+export default function CallScreen() {
+  const [localStream, setLocalStream] = React.useState();
+  const [remoteStream, setRemoteStream] = React.useState();
+  const [cachedLocalPC, setCachedLocalPC] = React.useState();
+  const [cachedRemotePC, setCachedRemotePC] = React.useState();
+
+  const [isMuted, setIsMuted] = React.useState(false);
+
+  const startLocalStream = async () => {
+    
+    //isFront определит, должна ли исходная камера быть лицом к пользователю или среде
+    const isFront = true;
+    const devices = await mediaDevices.enumerateDevices();
+
+    const facing = isFront ? 'front' : 'environment';
+    const videoSourceId = devices.find(device => device.kind === 'videoinput' && device.facing === facing);
+    const facingMode = isFront ? 'user' : 'environment';
+    const constraints = {
+      audio: true,
+      video: {
+        mandatory: {
+          minWidth: 500, // Provide your own width, height and frame rate here
+          minHeight: 300,
+          minFrameRate: 30,
+        },
+        facingMode,
+        optional: videoSourceId ? [{sourceId: videoSourceId}] : [],
+      },
+    };
+    const newStream = await mediaDevices.getUserMedia(constraints);
+    setLocalStream(newStream);
+  };
+
+  const startCall = async () => {
+    
+    const configuration = {iceServers: [{url: 'stun:stun.l.google.com:19302'}]};
+    const localPC = new RTCPeerConnection(configuration);
+    const remotePC = new RTCPeerConnection(configuration);
+
+    localPC.onicecandidate = e => {
+      try {
+        console.log('localPC icecandidate:', e.candidate);
+        if (e.candidate) {
+          remotePC.addIceCandidate(e.candidate);
+        }
+      } catch (err) {
+        console.error(`Error adding remotePC iceCandidate: ${err}`);
+>>>>>>> e8a40b00a80e778cc793370b009dd410d9b336f3
       }
     )
 
@@ -114,6 +174,7 @@ export default class CallScreen extends React.Component {
           videoSourceId = sourceInfo.deviceId;
         }
       }
+<<<<<<< HEAD
 
       const constraints = {
         audio: true,
@@ -131,6 +192,41 @@ export default class CallScreen extends React.Component {
       mediaDevices.getUserMedia(constraints)
         .then(success)
         .catch(failure);
+=======
+    };
+
+    localPC.addStream(localStream);
+      try {
+          const offer = await localPC.createOffer();
+          console.log('Offer from localPC, setLocalDescription');
+          await localPC.setLocalDescription(offer);
+          console.log('remotePC, setRemoteDescription');
+          await remotePC.setRemoteDescription(localPC.localDescription);
+          console.log('RemotePC, createAnswer');
+          const answer = await remotePC.createAnswer();
+          console.log(`Answer from remotePC: ${answer.sdp}`);
+          console.log('remotePC, setLocalDescription');
+          await remotePC.setLocalDescription(answer);
+          console.log('localPC, setRemoteDescription');
+          await localPC.setRemoteDescription(remotePC.localDescription);
+      } catch (err) {
+          console.error(err);
+      }
+      setCachedLocalPC(localPC);
+      setCachedRemotePC(remotePC);
+  };
+
+  const switchCamera = () => {
+    localStream.getVideoTracks().forEach(track => track._switchCamera());
+  };
+
+  const toggleMute = () => {
+    if (!remoteStream) return;
+    localStream.getAudioTracks().forEach(track => {
+      console.log(track.enabled ? 'muting' : 'unmuting', ' local track', track);
+      track.enabled = !track.enabled;
+      setIsMuted(!track.enabled);
+>>>>>>> e8a40b00a80e778cc793370b009dd410d9b336f3
     });
   }
     sendToPeer = (messageType, payload) => {
