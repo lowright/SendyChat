@@ -19,7 +19,7 @@
     "express": "^4.17.1",
     "immutability-helper": "^3.0.2",
     "laravel-echo": "^1.7.0",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.19",
     "native-base": "^2.13.12",
     "pusher": "^3.0.1",
     "pusher-js": "^6.0.2",
